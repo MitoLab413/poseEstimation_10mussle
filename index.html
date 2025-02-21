@@ -14,12 +14,9 @@
 
 </head>
 <!--
-動かんかったら良い感じに編集してください
 新しく姿勢推定を作る後輩へ、参考にしてもいいけど最初から自分で作った方が良いです。人のソースをいじるのは沼です。
 
 local環境でblazeposeとかする場合、crossoriginに引っかかります。html-serverを使って疑似的にweb環境作ってました
-
-
 -->
 <body>
 <div class="container">
@@ -496,7 +493,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
 
       }
 
-      if(correct==1){
+      if(correct==1){//正しい向きに向いているときにドレミの音声を流す
         if(trainingNow==-1||trainingNow==-2||trainingNow==-3||trainingNow==-4||trainingNow==-4.5){
           if(!doremiplay){
             doremiplay=true;
@@ -526,7 +523,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
             setTimeout(startTraining,5000,1);
           }else if(trainingNow==-2){
             setTimeout(startTraining,5000,2);
-          }else if(trainingNow==-3){
+          }else if(trainingNow==-3){//5秒間つま先立ち
             cnt = -1;
             var timer1;
             setTimeout(function(){trainingNow = 7.5;trainingTimer = new Date();timer1 = setInterval(function(){playTrainingMusic([1,2,3,4,5],++cnt);correct = 1;},countms);},3000);
@@ -557,15 +554,15 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
     }
 
 
-      function calcKnee(hip,knee,ankle){
+      function calcKnee(hip,knee,ankle){//膝の角度を出す
         var kh = makeVector(knee,hip);
         var ka = makeVector(knee,ankle);
         var khLength = Math.sqrt(kh.x**2 + kh.y**2 + kh.z**2);
         var kaLength = Math.sqrt(ka.x**2 + ka.y**2 + ka.z**2);
-        return {x:knee.x-kh.x/khLength*kaLength,y:knee.y-kh.y/khLength*kaLength};
+        return {x:knee.x-kh.x/khLength*kaLength,y:knee.y-kh.y/khLength*kaLength};//余弦定理
       }
 
-      function calcWrist(wrist,elbow,shoulder){
+      function calcElbow(wrist,elbow,shoulder){//肘の角度を出す
         var ew = makeVector(elbow,wrist);
         var es = makeVector(elbow,shoulder);
         var sw = makeVector(shoulder,wrist);
@@ -577,7 +574,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
         return {x:wrist.x,y:wrist.y-swLengthFuture};
       }
 
-      function calcTraining(results,resultAngle){
+      function calcTraining(results,resultAngle){//トレーニング中の角度からcorrectの計算
         var angle;
         if(trainingPattern>=1 && trainingPattern<2){
           if(trainingLR==1){
@@ -611,20 +608,8 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
             }
             break;
           case 1.3:
-            /*if(correct>=0 && angle>=110){
-              correct = 1;
-            }
-            if(angle<100){
-              correct = -1;
-            }*/
             break;
           case 1.5:
-            /*if(correct>=0 && angle>=110){
-              correct = 1;
-            }
-            if(angle<100){
-              correct = -1;
-            }*/
             break;
           case 1.7:
             if(correct<0.5 && angle>=120){
@@ -653,14 +638,6 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
             }
             break;
           case 4.1:
-          /*
-            if(correct<0.5 && angle<=95){
-              correct += 0.5;
-            }
-
-            if(correct>=0.5 && correct<0.8 &&  angle>95){
-              correct += 0.5;
-            }*/
             if(correct<0.5 && angle<=35){
               correct += 0.5;
             }
@@ -670,19 +647,8 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
             }
             break;
           case 4.3:
-          /*
-            if(correct<0.5 && angle>=95){
-              correct += 0.5;
-            }
-
-            if(correct>=0.5 && correct<0.8 &&  angle<95){
-              correct += 0.5;
-            }*/
             if(correct<0.5 && angle>=35){
-              //var ankleHeight = results.poseLandmarks[POSE_LANDMARKS.RIGHT_ANKLE].y-results.poseLandmarks[POSE_LANDMARKS.LEFT_ANKLE].y;
-              //if(ankleHeight*trainingLR<0){
                 correct += 0.5;
-              //}
             }
 
             if(correct>=0.5 && correct<0.8 && angle<35){
@@ -693,7 +659,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
         }
       }
 
-      function getSlowly(){
+      function getSlowly(){//早い動作の検知の準備、slowNodeにデータ突っ込みをする
         var results = pubresults;
         var resultAngle = pubresultAngle;
         var angle;
@@ -709,13 +675,8 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
         switch(trainingNow){
           case 1:
             if(trainingLR==1){
-              //var t = new Date();
-              //slowNode.push("r:"+t.getSeconds()+","+t.getMilliseconds());
-              //slowNode.push(angle);
               slowNode.push(Math.max(angleR,angleL));
             }else{
-              //var t = new Date();
-              //slowNode.push("l:"+t.getSeconds()+","+t.getMilliseconds());
               slowNode.push(Math.max(angleR,angleL));
             }
           break;
@@ -734,7 +695,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
         }
       }
 
-      function checkSlowly(){
+      function checkSlowly(){//早い動作の検知、slowNodeから判定用のspeedNodeを作成してチェック
         var tmode = slowNode[0];
         var speedNode=[];
         if(tmode!=2){
@@ -773,7 +734,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
           var snsumL = speedNode[snl-5]+speedNode[snl-3]+speedNode[snl-1]+((trainingcnt%2)*2-1)*(Math.abs(speedNode[snl-5])+Math.abs(speedNode[snl-3])+Math.abs(speedNode[snl-1]));//整流にする、+だけか-だけかに
           snsum = (Math.abs(snsumL)+Math.abs(snsumR))/4;
           slowflag = 1;
-          if(snsum<8){
+          if(snsum<10){
             slowcnt++;
             slowflag = -1;
             console.log("slow2");
@@ -944,7 +905,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
             console.log(user);
         });
 
-        function savedata(is_autosave){
+        function savedata(is_autosave){//自動セーブ
           if(is_autosave){
             cellDownload(items,cells);//localにダウンロード
             const user = Object.fromEntries(new URLSearchParams(window.location.search)).user.split(",");
@@ -952,7 +913,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
           }
         }
 
-        function resetTrainingVariable(){
+        function resetTrainingVariable(){//変数初期化
           trainingPattern = 0.0;
           trainingNow=0;
           slowcnt=0;
@@ -968,7 +929,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
         }
 
         //training設定
-        function startTraining(pattern){
+        function startTraining(pattern){//開始するとここに飛ぶ
           correctList = [];
           trainingNow = pattern;
           cellMake();
@@ -1208,7 +1169,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
         }
 
         //画像設定
-        function playTrainingImage(node,cnt,pattern){
+        function playTrainingImage(node,cnt,pattern){//運動状況変遷がメイン
           var items = node.length;
           if(node[cnt%items]==-1 || node[cnt%items]==-4){
             trainingPattern = pattern;
@@ -1271,7 +1232,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
           setTimeout(function(){ trainingPattern = 0.0; },38*1000);
         }*/
 
-        function getCanvasRoundAllow(anticlockwise,startAngle,endAngle,imgno){
+        function getCanvasRoundAllow(anticlockwise,startAngle,endAngle,imgno){//矢印を描く関数
           var raCanvas = document.createElement('canvas');//roundallowのキャンバス
           var raCanvasCtx = raCanvas.getContext('2d',{ willReadFrequently: true });
           var imgstr = "";
@@ -1337,17 +1298,10 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
           return csCanvas;
         }
 
-        function drawTrainingImage(results){
+        function drawTrainingImage(results){//描画
           var pL = results.poseLandmarks;
 
 
-          /*if(correct>=1 && slowflag==1){//三角形の表示→なんかタイミングおかしいので要チェック
-            canvasCtx.drawImage(Image["circle"],0,0,150,150);
-          }else if(correct>=1 && slowflag==-1){
-            canvasCtx.drawImage(Image["triangle"],0,0,150,150);
-          }else if(correct<0){
-            canvasCtx.drawImage(Image["cross"],0,0,150,150);
-          }*/
           if(trainingPattern>=5){
             if(correct>=0.1){
               canvasCtx.drawImage(Image["circle"],0,0,150,150);
@@ -1487,8 +1441,8 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
               //canvasCtx.drawImage(Image["upallow"],pL[POSE_LANDMARKS.LEFT_WRIST].x*canvasElement.width,pL[POSE_LANDMARKS.LEFT_WRIST].y*canvasElement.height,50,50);
               imageNode.push({x:pL[POSE_LANDMARKS.RIGHT_WRIST].x*canvasElement.width,y:pL[POSE_LANDMARKS.RIGHT_WRIST].y*canvasElement.height});
               imageNode.push({x:pL[POSE_LANDMARKS.LEFT_WRIST].x*canvasElement.width,y:pL[POSE_LANDMARKS.LEFT_WRIST].y*canvasElement.height});
-              var rightElbowFuture = calcWrist(pL[POSE_LANDMARKS.RIGHT_WRIST],pL[POSE_LANDMARKS.RIGHT_ELBOW],pL[POSE_LANDMARKS.RIGHT_SHOULDER]);
-              var leftElbowFuture = calcWrist(pL[POSE_LANDMARKS.LEFT_WRIST],pL[POSE_LANDMARKS.LEFT_ELBOW],pL[POSE_LANDMARKS.LEFT_SHOULDER]);
+              var rightElbowFuture = calcElbow(pL[POSE_LANDMARKS.RIGHT_WRIST],pL[POSE_LANDMARKS.RIGHT_ELBOW],pL[POSE_LANDMARKS.RIGHT_SHOULDER]);
+              var leftElbowFuture = calcElbow(pL[POSE_LANDMARKS.LEFT_WRIST],pL[POSE_LANDMARKS.LEFT_ELBOW],pL[POSE_LANDMARKS.LEFT_SHOULDER]);
               imageNode.push({x:rightElbowFuture.x*canvasElement.width,y:rightElbowFuture.y*canvasElement.height});
               imageNode.push({x:leftElbowFuture.x*canvasElement.width,y:leftElbowFuture.y*canvasElement.height});
               if(slowcnt>=6 && Math.floor(slowcnt)==slowcnt){
@@ -1896,7 +1850,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
     URL.revokeObjectURL(url);
 }*/
 
-    function onResults(results) {
+    function onResults(results) {//毎フレームすること
         if (!results.poseLandmarks) {
             grid.updateLandmarks([]);
             return;
@@ -2102,7 +2056,7 @@ local環境でblazeposeとかする場合、crossoriginに引っかかります�
     const pose = new Pose({locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
         }});
-    pose.setOptions({
+    pose.setOptions({//BlazePoseの初期設定
         modelComplexity: 1,
         smoothLandmarks: true,
         enableSegmentation: true,
